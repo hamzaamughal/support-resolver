@@ -39,3 +39,7 @@ body {
   font-family: var(--body);
   -webkit-font-smoothing: antialiased;
 }
+
+.foot { text-align:center; font-size:16px; color:var(--muted); font-family:var(--mono); padding:18px 22px 24px; border-top:1px solid var(--line); }
+.foot a { color:var(--muted); text-decoration:underline; text-underline-offset:2px; }
+.foot a:hover { color:var(--accent); }
