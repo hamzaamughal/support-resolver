@@ -153,6 +153,13 @@ export default function Home() {
             </div>
           </div>
         )}
+        <footer className="foot">
+            Built by{" "}
+            <a href="https://github.com/hamzaamughal" target="_blank" rel="noreferrer">
+              Hamza Abubakar
+            </a>{" "}
+            · RAG + agent decision · pgvector + OpenAI + Next.js
+          </footer>
       </main>
     </div>
   );

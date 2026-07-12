@@ -4,7 +4,7 @@ Resolve reads an incoming support ticket, searches a knowledge base for the answ
 
 It's a deliberate combination of two techniques: **RAG** (retrieval over a knowledge base) and an **agent decision** (answer-vs-escalate) — the shape most real internal AI support tools take.
 
-**Live demo:** https://your-app.vercel.app  ·  **Author:** [Hamza Abubakar](https://github.com/YOUR_USERNAME)
+**Live demo:** https://support-resolver.vercel.app/  ·  **Author:** [Hamza Abubakar](https://github.com/hamzaamughal)
 
 <!-- Replace with a screenshot showing one auto-answer and one escalation, with the source bars visible -->
 ![Resolve screenshot](./docs/screenshot.png)
@@ -81,4 +81,4 @@ The contrast is the point: the same system answers what it can and hands off wha
 ## Author
 
 Built by **Hamza Abubakar** — Senior Full Stack Engineer.
-[GitHub](https://github.com/hamzaamughal) · [LinkedIn](https://linkedin.com/in/hamza-abubakar) · [Portfolio](https://your-site.dev)
+[GitHub](https://github.com/hamzaamughal) · [LinkedIn](https://linkedin.com/in/hamza-abubakar) · [Portfolio](https://hamzaabubakar.dev/)
