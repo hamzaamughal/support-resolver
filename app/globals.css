@@ -16,6 +16,10 @@
   --body: var(--font-body), sans-serif;
 }
 
+@property --o1 { syntax: "<color>"; inherits: true; initial-value: rgba(255, 138, 61, 0.16); }
+@property --o2 { syntax: "<color>"; inherits: true; initial-value: rgba(86, 124, 230, 0.18); }
+@property --o3 { syntax: "<color>"; inherits: true; initial-value: rgba(56, 232, 176, 0.05); }
+
 @theme inline {
   --color-background: var(--bg);
   --color-foreground: var(--text);

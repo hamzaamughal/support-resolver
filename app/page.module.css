@@ -493,3 +493,127 @@
 }
 
 .snippet { margin: 0 0 8px; font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+
+/* ---- smooth UX + living background ---- */
+.root {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  flex: 1;
+  --o1: rgba(255, 138, 61, 0.16);
+  --o2: rgba(86, 124, 230, 0.18);
+  --o3: rgba(56, 232, 176, 0.05);
+  transition: --o1 0.9s ease, --o2 0.9s ease, --o3 0.9s ease;
+}
+/* The background reflects what the agent is doing */
+.root[data-mood="thinking"] { --o1: rgba(255, 138, 61, 0.34); --o2: rgba(255, 138, 61, 0.2); }
+.root[data-mood="answer"] { --o2: rgba(56, 232, 176, 0.2); --o3: rgba(56, 232, 176, 0.12); }
+.root[data-mood="escalate"] { --o2: rgba(255, 194, 75, 0.2); --o3: rgba(255, 194, 75, 0.1); }
+
+.bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.root[data-mood="thinking"] .bg { animation: breathe 1.7s ease-in-out infinite; }
+.bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+  background-size: 28px 28px;
+  -webkit-mask-image: radial-gradient(ellipse at 50% 25%, #000 15%, transparent 72%);
+  mask-image: radial-gradient(ellipse at 50% 25%, #000 15%, transparent 72%);
+}
+.bg i { position: absolute; display: block; border-radius: 50%; will-change: transform; }
+.orbA {
+  width: 70vmax; height: 70vmax; left: -22vmax; top: -34vmax;
+  background: radial-gradient(closest-side, var(--o1), transparent 70%);
+  animation: driftA 34s ease-in-out infinite alternate;
+}
+.orbB {
+  width: 62vmax; height: 62vmax; right: -20vmax; top: -8vmax;
+  background: radial-gradient(closest-side, var(--o2), transparent 70%);
+  animation: driftB 41s ease-in-out infinite alternate;
+}
+.orbC {
+  width: 56vmax; height: 56vmax; left: 18vmax; bottom: -36vmax;
+  background: radial-gradient(closest-side, var(--o3), transparent 70%);
+  animation: driftC 47s ease-in-out infinite alternate;
+}
+@keyframes driftA { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(9vmax, 7vmax, 0) scale(1.12); } }
+@keyframes driftB { from { transform: translate3d(0, 0, 0) scale(1.05); } to { transform: translate3d(-8vmax, 9vmax, 0) scale(0.95); } }
+@keyframes driftC { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-10vmax, -6vmax, 0) scale(1.1); } }
+@keyframes breathe { 0%, 100% { opacity: 0.72; } 50% { opacity: 1; } }
+
+/* entrance */
+.hero { animation: rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.howto > div { animation: rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.howto > div:nth-child(1) { animation-delay: 0.08s; }
+.howto > div:nth-child(2) { animation-delay: 0.16s; }
+.howto > div:nth-child(3) { animation-delay: 0.24s; }
+.scenario { animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.scenario:nth-child(1) { animation-delay: 0.2s; }
+.scenario:nth-child(2) { animation-delay: 0.25s; }
+.scenario:nth-child(3) { animation-delay: 0.3s; }
+.scenario:nth-child(4) { animation-delay: 0.35s; }
+.scenario:nth-child(5) { animation-delay: 0.4s; }
+.scenario:nth-child(6) { animation-delay: 0.45s; }
+.rise { animation: rise 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
+/* interaction polish */
+.cols { scroll-margin-top: 12px; }
+.scenSection { scroll-margin-top: 16px; }
+.scenario { position: relative; }
+.scenario:active:not(:disabled) { transform: scale(0.985); }
+.scenarioActive { border-color: var(--accent); background: rgba(255, 138, 61, 0.07); }
+.scenarioActive:disabled { opacity: 1; }
+.scenario:disabled:not(.scenarioActive) { opacity: 0.45; }
+.run { display: inline-flex; align-items: center; gap: 8px; transition: filter 0.15s, transform 0.15s, opacity 0.15s; }
+.run:active:not(:disabled) { transform: scale(0.97); }
+.approve { transition: filter 0.15s, transform 0.15s, opacity 0.15s; }
+.approve:active:not(:disabled) { transform: scale(0.97); }
+.approve:disabled { opacity: 0.5; cursor: not-allowed; }
+.escalateBtn { transition: border-color 0.15s, color 0.15s; }
+.textarea { transition: outline-color 0.15s, border-color 0.15s; }
+.hint { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.linkBtn {
+  align-self: flex-start; background: none; border: 0; cursor: pointer; color: var(--muted);
+  font-family: var(--mono); font-size: 12px; padding: 4px 2px; transition: color 0.15s;
+}
+.linkBtn:hover { color: var(--accent); }
+.scenario:focus-visible, .run:focus-visible, .approve:focus-visible, .escalateBtn:focus-visible,
+.linkBtn:focus-visible, .cta a:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+}
+.doneSent { animation: rise 0.35s ease both; }
+.verdict { animation: pop 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.3) both; }
+.bump { display: block; animation: bump 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.4) both; }
+@keyframes bump { 0% { transform: scale(0.7); opacity: 0.4; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes pop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* spinner */
+.spin {
+  display: inline-block; width: 13px; height: 13px; border-radius: 50%;
+  border: 2px solid rgba(23, 17, 10, 0.25); border-top-color: #17110a; animation: spin 0.7s linear infinite;
+}
+.scenario .spin { position: absolute; top: 12px; right: 12px; border-color: rgba(255, 138, 61, 0.25); border-top-color: var(--accent); }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* loading skeleton in the trace panel */
+.skel { margin-bottom: 14px; animation: rise 0.4s ease both; animation-delay: calc(var(--d, 0) * 120ms); }
+.skel p { margin: 0 0 8px; font-family: var(--mono); font-size: 12.5px; color: var(--muted); }
+.shimmer {
+  display: block; height: 38px; border-radius: 10px; border: 1px solid var(--line);
+  background: linear-gradient(100deg, var(--panel-2) 30%, #243149 50%, var(--panel-2) 70%);
+  background-size: 220% 100%; animation: shimmer 1.3s ease-in-out infinite;
+}
+@keyframes shimmer { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+
+@media (max-width: 860px) {
+  .orbA { width: 110vmax; height: 110vmax; }
+  .orbB { width: 100vmax; height: 100vmax; }
+  .orbC { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbA, .orbB, .orbC, .root[data-mood="thinking"] .bg { animation: none; }
+  .hero, .howto > div, .scenario, .rise, .skel, .verdict, .bump, .doneSent { animation: none; }
+  .shimmer, .spin { animation-duration: 3s; }
+  .root { transition: none; }
+}

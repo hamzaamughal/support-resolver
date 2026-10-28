@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, IBM_Plex_Mono, Inter } from "next/font/google";
 import "./globals.css";
 
@@ -21,8 +21,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Resolve",
-  description: "A support agent that answers from your docs — or escalates when it can't",
+  title: "Resolve · AI support agent for online stores",
+  description:
+    "An AI support agent that answers from your store policies and live order data, and hands off to a human when it isn't sure.",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0e1420",
 };
 
 export default function RootLayout({
