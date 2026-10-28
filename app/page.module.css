@@ -649,3 +649,22 @@
 @media (prefers-reduced-motion: reduce) {
   .dot, .sweep, .ripple { animation: none; display: none; }
 }
+
+/* walkthrough video button + modal */
+.watch {
+  margin-top: 18px; display: inline-flex; align-items: center; gap: 10px; cursor: pointer;
+  background: var(--accent); color: #1a1208; border: 0; border-radius: 999px; padding: 10px 18px 10px 12px;
+  font: 600 14.5px var(--body); transition: transform 0.15s ease, filter 0.15s ease;
+}
+.watch:hover { transform: translateY(-1px); filter: brightness(1.06); }
+.watchPlay { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: rgba(26, 18, 8, 0.18); font-size: 10px; padding-left: 2px; }
+.modal {
+  position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px;
+  background: rgba(6, 10, 18, 0.82); animation: pop 0.2s ease both;
+}
+.modalBox { position: relative; width: min(1100px, 100%); }
+.modalVideo { width: 100%; display: block; border-radius: 14px; border: 1px solid var(--line); background: #000; max-height: 82vh; }
+.modalClose {
+  position: absolute; top: -14px; right: -6px; z-index: 1; width: 32px; height: 32px; border-radius: 50%;
+  border: 1px solid var(--line); background: var(--panel); color: var(--text); cursor: pointer; font-size: 14px;
+}

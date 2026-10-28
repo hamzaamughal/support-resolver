@@ -59,6 +59,7 @@ const PARTICLES = [
 type Stats = { runs: number; ms: number; answered: number; asked: number; escalated: number; approved: number };
 
 export default function Console({ store }: { store: ConsoleStore }) {
+  const [showVideo, setShowVideo] = useState(false);
   const [ticket, setTicket] = useState("");
   const [active, setActive] = useState<string | null>(null);
   const [typing, setTyping] = useState(false);
@@ -291,6 +292,15 @@ export default function Console({ store }: { store: ConsoleStore }) {
         </div>
       </header>
 
+      {showVideo && (
+        <div className={styles.modal} onClick={() => setShowVideo(false)} role="dialog" aria-label="Walkthrough video">
+          <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
+            <button type="button" className={styles.modalClose} onClick={() => setShowVideo(false)} aria-label="Close video">✕</button>
+            <video src="/resolve-demo.mp4" controls autoPlay playsInline className={styles.modalVideo} />
+          </div>
+        </div>
+      )}
+
       <main className={styles.stream}>
         <section className={styles.hero}>
           <h1 className={styles.heroTitle}>
@@ -299,11 +309,11 @@ export default function Console({ store }: { store: ConsoleStore }) {
           </h1>
           <p className={styles.heroSub}>
             This is a demo for <b>{store.name}</b>, a fictional store. Pick a ticket below and watch what the agent does,
-            step by step.{" "}
-            <a href="/resolve-demo.mp4" target="_blank" rel="noreferrer" style={{ color: "var(--accent, #ff8a3d)", whiteSpace: "nowrap" }}>
-              Watch the 2-min walkthrough →
-            </a>
+            step by step.
           </p>
+          <button type="button" className={styles.watch} onClick={() => setShowVideo(true)}>
+            <span className={styles.watchPlay}>▶</span> Watch the 2-min walkthrough
+          </button>
           <div className={styles.howto}>
             <div><b>1</b><span>Customer asks<small>A ticket or chat message</small></span></div>
             <div><b>2</b><span>Agent checks<small>Store policies and live order data</small></span></div>
