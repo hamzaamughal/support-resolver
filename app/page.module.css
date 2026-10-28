@@ -491,3 +491,5 @@
   .step, .final { animation: none; opacity: 1; }
   .pending p { animation: none; }
 }
+
+.snippet { margin: 0 0 8px; font-size: 12.5px; line-height: 1.5; color: var(--muted); }

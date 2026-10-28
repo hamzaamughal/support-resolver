@@ -42,6 +42,12 @@ const OVERRIDES: Record<string, string> = {
 
 const now = () => performance.now();
 
+/** One-line preview of a passage: drops markdown symbols and trims to ~170 chars. */
+function snippet(text: string) {
+  const clean = text.replace(/[#*_`>|-]+/g, " ").replace(/\s+/g, " ").trim();
+  return clean.length > 170 ? clean.slice(0, 170).trimEnd() + "…" : clean;
+}
+
 type Stats = { runs: number; ms: number; answered: number; asked: number; escalated: number; approved: number };
 
 export default function Console({ store }: { store: ConsoleStore }) {
@@ -119,8 +125,11 @@ export default function Console({ store }: { store: ConsoleStore }) {
                   <span className={styles.srcName}>
                     <span className={styles.srcNum}>[{i + 1}]</span> {s.source}
                   </span>
-                  <span className={styles.srcPct} style={{ color: heat(sim) }}>{Math.round(sim * 100)}% match</span>
+                  <span className={styles.srcPct} style={{ color: heat(sim) }}>
+                    {i === 0 ? "best match" : "also considered"}
+                  </span>
                 </div>
+                <p className={styles.snippet}>{snippet(s.content)}</p>
                 <div className={styles.track}>
                   <div className={styles.fill} style={{ width: `${Math.max(sim * 100, 3)}%`, background: heat(sim) }} />
                   <span className={styles.thresh} style={{ left: `${thresholdSim * 100}%` }} />
@@ -129,7 +138,7 @@ export default function Console({ store }: { store: ConsoleStore }) {
             );
           })}
           <p className={styles.muted}>
-            The marker is the minimum match ({Math.round(thresholdSim * 100)}%) needed to answer a policy question.
+            The marker is the minimum relevance needed to answer a policy question. Below it, the agent escalates.
           </p>
         </>
       ),
@@ -210,7 +219,8 @@ export default function Console({ store }: { store: ConsoleStore }) {
       <main className={styles.stream}>
         <section className={styles.hero}>
           <h1 className={styles.heroTitle}>
-            An AI support agent that <em>answers from your policies and orders</em> — and hands off to a human when it isn&apos;t sure.
+            An AI support agent that <em>answers from your policies and orders</em>{" "}
+            — and hands off to a human when it isn&apos;t sure.
           </h1>
           <p className={styles.heroSub}>
             This is a demo for <b>{store.name}</b>, a fictional store. Pick a ticket below and watch what the agent does,
