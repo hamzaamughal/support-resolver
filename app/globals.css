@@ -18,6 +18,7 @@
 
 @property --o1 { syntax: "<color>"; inherits: true; initial-value: rgba(255, 138, 61, 0.16); }
 @property --o2 { syntax: "<color>"; inherits: true; initial-value: rgba(86, 124, 230, 0.18); }
+@property --dot { syntax: "<color>"; inherits: true; initial-value: rgba(255, 255, 255, 0.35); }
 @property --o3 { syntax: "<color>"; inherits: true; initial-value: rgba(56, 232, 176, 0.05); }
 
 @theme inline {

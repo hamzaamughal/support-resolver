@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./page.module.css";
 
 type KbChunk = { source: string; content: string; distance: number };
@@ -48,10 +48,18 @@ function snippet(text: string) {
   return clean.length > 170 ? clean.slice(0, 170).trimEnd() + "…" : clean;
 }
 
+/** Ambient particles for the background: fixed values so server and client render the same. */
+const PARTICLES = [
+  [6, 5, 26, 0], [14, 3, 34, 6], [22, 6, 29, 12], [31, 4, 38, 3], [39, 5, 31, 17], [47, 3, 36, 9],
+  [55, 6, 28, 21], [63, 4, 40, 5], [71, 5, 33, 14], [79, 3, 37, 1], [86, 6, 30, 19], [93, 4, 35, 8],
+] as const;
+
 type Stats = { runs: number; ms: number; answered: number; asked: number; escalated: number; approved: number };
 
 export default function Console({ store }: { store: ConsoleStore }) {
   const [ticket, setTicket] = useState("");
+  const [active, setActive] = useState<string | null>(null);
+  const [typing, setTyping] = useState(false);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [res, setRes] = useState<Resolution | null>(null);
@@ -61,13 +69,63 @@ export default function Console({ store }: { store: ConsoleStore }) {
 
   const thresholdSim = Math.max(0, 1 - store.escalateDistance);
 
+  const colsRef = useRef<HTMLDivElement>(null);
+  const scenRef = useRef<HTMLElement>(null);
+  const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (timer.current) clearInterval(timer.current);
+    },
+    []
+  );
+
+  const stopTyping = () => {
+    if (timer.current) {
+      clearInterval(timer.current);
+      timer.current = null;
+    }
+    setTyping(false);
+  };
+
+  /** Types the draft reply in, like a person writing it. Instant if the user prefers reduced motion. */
+  const typeDraft = (full: string) => {
+    stopTyping();
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!full || reduce) {
+      setDraft(full);
+      return;
+    }
+    setDraft("");
+    setTyping(true);
+    let i = 0;
+    timer.current = setInterval(() => {
+      i = Math.min(full.length, i + 3);
+      setDraft(full.slice(0, i));
+      if (i >= full.length) stopTyping();
+    }, 16);
+  };
+
+  /** Glide down to the composer + trace if they are not already in view. */
+  const scrollToWork = () => {
+    const el = colsRef.current;
+    if (!el) return;
+    const top = el.getBoundingClientRect().top;
+    if (top > 140 || top < -40) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const mood = loading ? "thinking" : res ? (res.mode === "escalate" ? "escalate" : "answer") : "idle";
+
   const resolve = async (text: string) => {
     const t = text.trim();
     if (!t || loading) return;
+    stopTyping();
+    setActive(t);
     setLoading(true);
     setErr(null);
     setRes(null);
     setStatus("idle");
+    scrollToWork();
     const t0 = now();
     try {
       const r = await fetch("/api/resolve", {
@@ -79,7 +137,7 @@ export default function Console({ store }: { store: ConsoleStore }) {
       if (!r.ok) throw new Error(data.error || "Failed");
       const out: Resolution = data.resolution;
       setRes(out);
-      setDraft(out.answer ?? "");
+      typeDraft(out.answer ?? "");
       const elapsed = now() - t0;
       setStats((s) => ({
         runs: s.runs + 1,
@@ -200,6 +258,21 @@ export default function Console({ store }: { store: ConsoleStore }) {
   };
 
   return (
+    <div className={styles.root} data-mood={mood}>
+      <div className={styles.bg} aria-hidden>
+        <i className={styles.orbA} />
+        <i className={styles.orbB} />
+        <i className={styles.orbC} />
+        <i className={styles.sweep} />
+        {PARTICLES.map(([x, size, dur, delay], i) => (
+          <i
+            key={i}
+            className={styles.dot}
+            style={{ ["--x" as string]: `${x}%`, ["--s" as string]: `${size}px`, ["--t" as string]: `${dur}s`, ["--d" as string]: `-${delay}s` } as React.CSSProperties}
+          />
+        ))}
+        {res && !loading && <span key={stats.runs} className={styles.ripple} />}
+      </div>
     <div className={styles.app}>
       <header className={styles.bar}>
         <div className={styles.brand}>
@@ -233,24 +306,26 @@ export default function Console({ store }: { store: ConsoleStore }) {
           </div>
         </section>
 
-        <section>
+        <section ref={scenRef} className={styles.scenSection}>
           <p className={styles.lbl}>Try a ticket</p>
           <div className={styles.scenarios}>
             {store.examples.map((ex) => (
               <button
                 key={ex.text}
-                className={styles.scenario}
+                className={`${styles.scenario} ${active === ex.text ? styles.scenarioActive : ""}`}
                 disabled={loading}
+                aria-busy={loading && active === ex.text}
                 onClick={() => { setTicket(ex.text); resolve(ex.text); }}
               >
                 <span>{ex.text}</span>
                 {ex.tag && <small>{ex.tag}</small>}
+                {loading && active === ex.text && <i className={styles.spin} aria-hidden />}
               </button>
             ))}
           </div>
         </section>
 
-        <div className={styles.cols}>
+        <div ref={colsRef} className={styles.cols}>
           <div className={styles.colLeft}>
             <div className={styles.composer}>
               <label className={styles.lbl}>Incoming support ticket</label>
@@ -258,19 +333,24 @@ export default function Console({ store }: { store: ConsoleStore }) {
                 className={styles.textarea}
                 value={ticket}
                 onChange={(e) => setTicket(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) resolve(ticket);
+                }}
                 placeholder="Pick a ticket above, or write your own…"
               />
               <div className={styles.row}>
                 <button className={styles.run} onClick={() => resolve(ticket)} disabled={loading || !ticket.trim()}>
+                  {loading && <i className={styles.spin} aria-hidden />}
                   {loading ? "Resolving…" : "Resolve ticket"}
                 </button>
+                <span className={styles.hint}>Ctrl + Enter to run</span>
               </div>
             </div>
 
             {err && <div className={styles.error}>Error: {err}</div>}
 
             {res && (
-              <div className={styles.result}>
+              <div className={`${styles.result} ${styles.rise}`}>
                 <div className={styles.resultHead}>
                   <span className={`${styles.verdict} ${res.mode === "escalate" ? styles.escalate : styles.answer}`}>
                     {verdictLabel(res.mode)}
@@ -289,11 +369,13 @@ export default function Console({ store }: { store: ConsoleStore }) {
                       <textarea
                         className={`${styles.textarea} ${styles.draft}`}
                         value={draft}
+                        readOnly={typing}
                         onChange={(e) => setDraft(e.target.value)}
                       />
                       <div className={styles.actions}>
                         <button
                           className={styles.approve}
+                          disabled={typing}
                           onClick={() => {
                             setStatus("sent");
                             setStats((s) => ({ ...s, approved: s.approved + 1 }));
@@ -314,6 +396,15 @@ export default function Console({ store }: { store: ConsoleStore }) {
                 )}
               </div>
             )}
+
+            {res && !loading && (
+              <button
+                className={styles.linkBtn}
+                onClick={() => scenRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+              >
+                ↑ Try another ticket
+              </button>
+            )}
           </div>
 
           <aside className={styles.tracePanel}>
@@ -324,9 +415,12 @@ export default function Console({ store }: { store: ConsoleStore }) {
             <div className={styles.traceBody}>
               {loading && (
                 <div className={styles.pending}>
-                  <p>Reading the ticket…</p>
-                  <p>Searching the knowledge base…</p>
-                  <p>Running safety checks…</p>
+                  {["Reading the ticket", "Searching the knowledge base", "Running safety checks"].map((t, i) => (
+                    <div key={t} className={styles.skel} style={{ ["--d" as string]: i } as React.CSSProperties}>
+                      <p>{t}…</p>
+                      <span className={styles.shimmer} />
+                    </div>
+                  ))}
                 </div>
               )}
               {!loading && !res && (
@@ -352,11 +446,11 @@ export default function Console({ store }: { store: ConsoleStore }) {
           <div className={styles.box}>
             <p className={styles.lbl}>This session</p>
             <div className={styles.stats}>
-              <div><b>{stats.answered}</b><span>Auto-answered</span></div>
-              <div><b>{stats.asked}</b><span>Asked for details</span></div>
-              <div><b>{stats.escalated}</b><span>Escalated</span></div>
-              <div><b>{stats.approved}</b><span>Approved</span></div>
-              <div><b>{stats.runs ? `${(stats.ms / stats.runs / 1000).toFixed(1)}s` : "–"}</b><span>Avg response</span></div>
+              <div><b key={stats.answered} className={styles.bump}>{stats.answered}</b><span>Auto-answered</span></div>
+              <div><b key={stats.asked} className={styles.bump}>{stats.asked}</b><span>Asked for details</span></div>
+              <div><b key={stats.escalated} className={styles.bump}>{stats.escalated}</b><span>Escalated</span></div>
+              <div><b key={stats.approved} className={styles.bump}>{stats.approved}</b><span>Approved</span></div>
+              <div><b key={stats.runs} className={styles.bump}>{stats.runs ? `${(stats.ms / stats.runs / 1000).toFixed(1)}s` : "–"}</b><span>Avg response</span></div>
             </div>
             <p className={styles.muted}>Counts for your demo session only.</p>
           </div>
@@ -378,6 +472,7 @@ export default function Console({ store }: { store: ConsoleStore }) {
         </a>{" "}
         · RAG + agent decision · pgvector + OpenAI + Next.js
       </footer>
+    </div>
     </div>
   );
 }

@@ -500,15 +500,16 @@
   isolation: isolate;
   width: 100%;
   flex: 1;
-  --o1: rgba(255, 138, 61, 0.16);
-  --o2: rgba(86, 124, 230, 0.18);
-  --o3: rgba(56, 232, 176, 0.05);
-  transition: --o1 0.9s ease, --o2 0.9s ease, --o3 0.9s ease;
+  --o1: rgba(255, 138, 61, 0.22);
+  --o2: rgba(86, 124, 230, 0.26);
+  --o3: rgba(56, 232, 176, 0.08);
+  --dot: rgba(255, 255, 255, 0.35);
+  transition: --o1 0.9s ease, --o2 0.9s ease, --o3 0.9s ease, --dot 0.9s ease;
 }
 /* The background reflects what the agent is doing */
-.root[data-mood="thinking"] { --o1: rgba(255, 138, 61, 0.34); --o2: rgba(255, 138, 61, 0.2); }
-.root[data-mood="answer"] { --o2: rgba(56, 232, 176, 0.2); --o3: rgba(56, 232, 176, 0.12); }
-.root[data-mood="escalate"] { --o2: rgba(255, 194, 75, 0.2); --o3: rgba(255, 194, 75, 0.1); }
+.root[data-mood="thinking"] { --o1: rgba(255, 138, 61, 0.42); --o2: rgba(255, 138, 61, 0.28); --dot: rgba(255, 170, 110, 0.9); }
+.root[data-mood="answer"] { --o2: rgba(56, 232, 176, 0.28); --o3: rgba(56, 232, 176, 0.16); --dot: rgba(56, 232, 176, 0.85); }
+.root[data-mood="escalate"] { --o2: rgba(255, 194, 75, 0.28); --o3: rgba(255, 194, 75, 0.14); --dot: rgba(255, 194, 75, 0.85); }
 
 .bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
 .root[data-mood="thinking"] .bg { animation: breathe 1.7s ease-in-out infinite; }
@@ -616,4 +617,39 @@
   .hero, .howto > div, .scenario, .rise, .skel, .verdict, .bump, .doneSent { animation: none; }
   .shimmer, .spin { animation-duration: 3s; }
   .root { transition: none; }
+}
+
+/* ---- extra background motion, tied to the agent's state ---- */
+/* ambient particles rise slowly; they take the mood colour */
+.dot {
+  left: var(--x); bottom: -20px; width: var(--s); height: var(--s);
+  background: var(--dot); opacity: 0;
+  box-shadow: 0 0 14px 2px var(--dot);
+  animation: floatUp var(--t) linear infinite; animation-delay: var(--d);
+}
+@keyframes floatUp {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  10% { opacity: 0.55; }
+  85% { opacity: 0.4; }
+  100% { transform: translate3d(2.5vmax, -112vh, 0); opacity: 0; }
+}
+/* while the agent is thinking, a light beam scans across the page (ticket -> trace) */
+.sweep {
+  top: 0; bottom: 0; left: 0; width: 36vmax; border-radius: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 150, 80, 0.2), rgba(255, 200, 150, 0.28), rgba(255, 150, 80, 0.2), transparent);
+  transform: translate3d(-45vmax, 0, 0); opacity: 0; transition: opacity 0.5s ease;
+  animation: sweep 2.1s ease-in-out infinite; animation-play-state: paused;
+}
+.root[data-mood="thinking"] .sweep { opacity: 1; animation-play-state: running; }
+@keyframes sweep { from { transform: translate3d(-45vmax, 0, 0); } to { transform: translate3d(105vw, 0, 0); } }
+/* when a result lands, one soft ripple in the verdict colour */
+.ripple {
+  left: 26%; top: 58%; width: 26vmax; height: 26vmax; margin: -13vmax 0 0 -13vmax; border-radius: 50%;
+  display: block; position: absolute;
+  border: 2px solid var(--dot); background: radial-gradient(closest-side, transparent 55%, var(--dot));
+  opacity: 0; animation: ripple 1.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes ripple { 0% { transform: scale(0.15); opacity: 0.55; } 100% { transform: scale(1.6); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .dot, .sweep, .ripple { animation: none; display: none; }
 }
