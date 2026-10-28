@@ -4,12 +4,15 @@
 //   npx tsx --env-file=.env.local scripts/migrate.ts
 import { sql } from "../lib/db";
 
+// ETAs are relative to "today" so the demo never shows a past delivery estimate for open orders.
+const inDays = (n: number) => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
+
 const DEMO_ORDERS = [
   // order_number, email, status, placed, items, total, method, city, country, carrier, tracking, eta, delivered
-  ["KA-1042", "sara.m@example.com", "shipped", "2026-10-06", [{ name: "Everyday Organic Tee", size: "M", qty: 2 }, { name: "Field Hoodie", size: "L", qty: 1 }], 112.0, "Standard (USPS)", "Austin", "United States", "USPS", "9400 1000 0000 0000 1042", "2026-10-13", null],
-  ["KA-1043", "james.k@example.com", "processing", "2026-10-10", [{ name: "Relaxed Chino", size: "32", qty: 1 }], 68.0, "Express (UPS)", "Denver", "United States", null, null, "2026-10-14", null],
+  ["KA-1042", "sara.m@example.com", "shipped", "2026-10-06", [{ name: "Everyday Organic Tee", size: "M", qty: 2 }, { name: "Field Hoodie", size: "L", qty: 1 }], 112.0, "Standard (USPS)", "Austin", "United States", "USPS", "9400 1000 0000 0000 1042", inDays(3), null],
+  ["KA-1043", "james.k@example.com", "processing", "2026-10-10", [{ name: "Relaxed Chino", size: "32", qty: 1 }], 68.0, "Express (UPS)", "Denver", "United States", null, null, inDays(4), null],
   ["KA-1044", "priya.r@example.com", "delivered", "2026-09-22", [{ name: "Field Hoodie", size: "S", qty: 1 }], 72.0, "Royal Mail tracked", "Manchester", "United Kingdom", "Royal Mail", "RM104400000GB", "2026-10-03", "2026-10-02"],
-  ["KA-1045", "liam.t@example.com", "shipped", "2026-09-18", [{ name: "Everyday Organic Tee", size: "XL", qty: 3 }], 84.0, "Canada Post", "Toronto", "Canada", "Canada Post", "CA104500000", "2026-09-30", null],
+  ["KA-1045", "liam.t@example.com", "shipped", "2026-09-18", [{ name: "Everyday Organic Tee", size: "XL", qty: 3 }], 84.0, "Canada Post", "Toronto", "Canada", "Canada Post", "CA104500000", inDays(2), null],
   ["KA-1046", "noor.a@example.com", "cancelled", "2026-10-01", [{ name: "Weekend Jogger", size: "30", qty: 1 }], 58.0, "Standard (USPS)", "Chicago", "United States", null, null, null, null],
   ["KA-1047", "emma.w@example.com", "delivered", "2026-10-02", [{ name: "Everyday Organic Tee", size: "S", qty: 1 }, { name: "Weekend Jogger", size: "28", qty: 1 }], 86.0, "Standard (USPS)", "Seattle", "United States", "USPS", "9400 1000 0000 0000 1047", "2026-10-08", "2026-10-07"],
 ] as const;

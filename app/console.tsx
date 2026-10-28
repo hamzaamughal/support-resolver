@@ -44,7 +44,9 @@ const now = () => performance.now();
 
 /** One-line preview of a passage: drops markdown symbols and trims to ~170 chars. */
 function snippet(text: string) {
-  const clean = text.replace(/[#*_`>|-]+/g, " ").replace(/\s+/g, " ").trim();
+  const cutStart = /^[a-z]/.test(text);
+  let clean = text.replace(/[#*_`>|-]+/g, " ").replace(/\s+/g, " ").trim();
+  if (cutStart) clean = "… " + clean.replace(/^\S+\s*/, "");
   return clean.length > 170 ? clean.slice(0, 170).trimEnd() + "…" : clean;
 }
 
@@ -297,7 +299,10 @@ export default function Console({ store }: { store: ConsoleStore }) {
           </h1>
           <p className={styles.heroSub}>
             This is a demo for <b>{store.name}</b>, a fictional store. Pick a ticket below and watch what the agent does,
-            step by step.
+            step by step.{" "}
+            <a href="/resolve-demo.mp4" target="_blank" rel="noreferrer" style={{ color: "var(--accent, #ff8a3d)", whiteSpace: "nowrap" }}>
+              Watch the 2-min walkthrough →
+            </a>
           </p>
           <div className={styles.howto}>
             <div><b>1</b><span>Customer asks<small>A ticket or chat message</small></span></div>

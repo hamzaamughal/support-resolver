@@ -52,7 +52,7 @@ export const STORES: Record<string, StoreConfig> = {
     tone: "warm, short and helpful, like a good store assistant; no emojis",
     categories: ["Order status", "Shipping", "Returns", "Sizing", "Payments", "Other"],
     ordersEnabled: true,
-    escalateDistance: 0.6,
+    escalateDistance: 0.65,
     examples: [
       "Where is my order KA-1042? My email is sara.m@example.com",
       "Can I return a hoodie I bought 3 weeks ago?",
