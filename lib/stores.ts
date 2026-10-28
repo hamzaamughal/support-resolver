@@ -18,6 +18,10 @@ export type StoreConfig = {
   escalateDistance: number;
   /** Example tickets shown in the console UI. */
   examples: string[];
+  /** Short label per example (same order), e.g. "order lookup tool". */
+  exampleTags?: string[];
+  /** What the agent knows, shown as a list in the console UI. */
+  knowledge: string[];
   /** Short tagline for the console header. */
   tagline: string;
 };
@@ -36,6 +40,8 @@ export const STORES: Record<string, StoreConfig> = {
       "Can I get a refund on my subscription?",
       "Do you have a SOC 2 report for my security team?",
     ],
+    exampleTags: ["policy RAG", "policy RAG", "escalates if unsure"],
+    knowledge: ["Billing & refunds", "Account & login", "Integrations & data"],
     tagline: "A support agent that answers from your docs — or escalates when it can't",
   },
   kora: {
@@ -53,7 +59,10 @@ export const STORES: Record<string, StoreConfig> = {
       "I'm usually between M and L, which size should I get?",
       "Do you ship to Australia?",
       "Can you give me a 50% discount code?",
+      "Where is my order?",
     ],
+    exampleTags: ["order lookup tool", "policy RAG", "policy RAG", "policy RAG", "escalates, no guessing", "asks for details"],
+    knowledge: ["Shipping & delivery", "Returns & exchanges", "Sizing guide", "Orders & payments", "Live order lookup (tool)"],
     tagline: "AI support for Shopify stores — answers from store policies and real order data, escalates when unsure",
   },
 };
