@@ -6,7 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:migrate": "tsx --env-file=.env.local scripts/migrate.ts",
+    "db:ingest": "tsx --env-file=.env.local scripts/ingest.ts",
+    "ingest": "tsx --env-file=.env.local scripts/ingest.ts",
+    "resolve": "tsx --env-file=.env.local scripts/resolve.ts",
+    "test": "tsx --test tests/*.test.ts",
+    "ask": "tsx --env-file=.env.local scripts/resolve.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.11",

@@ -57,6 +57,35 @@ The demo ships with a small knowledge base for a fictional product ("Beacon") co
 
 The contrast is the point: the same system answers what it can and hands off what it can't. To make it answer new topics, just add documents to the knowledge base — no code changes.
 
+## Shopify store demo (Kora Apparel)
+
+The same agent runs as a customer-support assistant for a fictional Shopify clothing store, **Kora Apparel**. On top of answering from store policies, it can look up a real order:
+
+- **Order lookup tool:** the model calls `lookupOrder(orderNumber, email)`. The order is only returned when *both* match, and a wrong email returns exactly the same result as a wrong number, so the agent can never confirm that someone else's order exists. Only city and country are shared, never the full address.
+- **Three outcomes:** answer, ask the customer for missing details (order number + email), or escalate.
+- **Deterministic backstop** (`lib/backstop.ts`): an order answer is blocked unless a lookup in that same run actually matched; policy answers are still blocked when retrieval is weak.
+- **Multi-store:** each store has its own config (`lib/stores.ts`) and knowledge base (`docs/<store>/`). Pick one with `STORE_ID`.
+
+### Run it
+
+```bash
+# .env.local
+DATABASE_URL=postgres://...      # Neon + pgvector
+OPENAI_API_KEY=sk-...
+STORE_ID=kora                    # or beacon
+
+npm run db:migrate               # adds store column + orders table, seeds 6 demo orders (safe to re-run)
+npm run ingest -- kora           # embeds docs/kora/*.md
+npm run ask -- "Where is my order KA-1042? My email is sara.m@example.com"
+npm run ask -- --chat            # multi-turn conversation in the terminal
+npm run dev
+npm test                         # 12 tests, mock model, no API key or DB needed
+```
+
+Demo orders: `KA-1042` sara.m@example.com (shipped), `KA-1043` james.k@example.com (processing), `KA-1044` priya.r@example.com (delivered), `KA-1045` liam.t@example.com (shipped, delayed), `KA-1046` noor.a@example.com (cancelled), `KA-1047` emma.w@example.com (delivered).
+
+For a real store, only `lib/orders.ts` changes: the SQL query is replaced with a Shopify Admin API orders query.
+
 ## Tech stack
 
 | Layer | Choice |

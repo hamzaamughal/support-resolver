@@ -4,7 +4,7 @@ import { sql } from "./db";
 
 export type KbChunk = { source: string; content: string; distance: number };
 
-export async function retrieve(query: string, k = 4): Promise<KbChunk[]> {
+export async function retrieve(query: string, store: string, k = 4): Promise<KbChunk[]> {
   const { embedding } = await embed({
     model: openai.embedding("text-embedding-3-small"),
     value: query,
@@ -14,6 +14,7 @@ export async function retrieve(query: string, k = 4): Promise<KbChunk[]> {
   const rows = await sql`
     SELECT source, content, embedding <=> ${vec}::vector AS distance
     FROM kb_chunks
+    WHERE store = ${store}
     ORDER BY embedding <=> ${vec}::vector
     LIMIT ${k}
   `;
